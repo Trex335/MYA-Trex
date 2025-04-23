@@ -17,7 +17,7 @@
             display: flex;
             flex-direction: column;
         }
-    
+
         .loader {
             display: none;
             position: fixed;
@@ -68,7 +68,7 @@
             border-bottom: 1px solid #ddd;
             position: fixed;
             top: 0;
-            
+
             width: 100%;
             z-index: 1000;
             box-sizing: border-box;
@@ -97,7 +97,7 @@
             margin: 0;
             font-weight: 500;
         }
-    
+
         .kebab-menu {
             position: absolute;
             right: 15px;
@@ -148,7 +148,7 @@
         .kebab-dropdown a:hover {
             background-color: #f5f5f5;
         }
-    
+
         .title {
             font-size: 1.5rem;
             font-weight: bold;
@@ -166,7 +166,7 @@
             height: auto;
             border-radius: 0 7px 7px 0; 
         }
-    
+
         .dropdown a {
             color: white;
             padding: 10px 15px;
@@ -246,8 +246,15 @@
     padding: 10px;
     border-radius: 15px;
     position: relative;
+    overflow: hidden;
 }
 
+.message img {
+    width: calc(100% + 20px);   /* Stretch beyond padding */
+    margin: 10px -10px;         /* Top/bottom gap + pull left/right into padding */
+    display: block;
+    border-radius: 8px;         /* Soft corners on the image */
+}
 /* Align AI avatar closer to left */
 .message.received {
     flex-direction: row;
@@ -277,11 +284,7 @@
     background-repeat: no-repeat;
 }
 
-.message img {
-    max-width: 100%;
-    border-radius: 10px;
-    margin-top: 5px;
-}
+
         .copy-btn {
             position: absolute;
             bottom: -19px;
@@ -293,11 +296,11 @@
             cursor: pointer;
             font-size: 14px;
         }
-    
+
         .copy-btn span {
             margin-right: 5px;
         }
-    
+
         .copy-btn:hover {
             background-color: white;
         }
@@ -397,11 +400,11 @@
         .auth-box button:hover {
             background-color: #365899;
         }
-        
+
         .logout {
             color: red;
         }
-  
+
         .auth-toggle {
             margin-top: 10px;
         }
@@ -640,7 +643,7 @@
         <a href="#" onclick="showContainer('help')">Help</a>
         <a href="#" onclick="logout()">Logout</a>
     </div>
-  
+
     <button class="news-toggle" onclick="toggleNews()" title="Toggle News">
         <i class="fas fa-newspaper"></i>
     </button>
@@ -660,7 +663,7 @@
             </button>
         </div>
     </div>
-    
+
     <a class="gotopbtn" href="#"><i class="fas fa-arrow-up"></i></a>
 
     <div class="overlay" id="overlay"></div>
@@ -770,7 +773,7 @@
                     successMessage.textContent = 'Login successful!';
                     successMessage.style.display = 'block';
                     localStorage.setItem('currentUser', username);
-                    
+
                     // Hide loader after a brief delay to show success message
                     setTimeout(() => {
                         loader.style.display = 'none';
@@ -794,7 +797,7 @@
                     localStorage.setItem('users', JSON.stringify(users));
                     successMessage.textContent = 'Account created successfully! Please login.';
                     successMessage.style.display = 'block';
-                    
+
                     // Hide loader after a brief delay to show success message
                     setTimeout(() => {
                         loader.style.display = 'none';
@@ -892,7 +895,7 @@
             });
             this.style.display = 'none';
         });
-  
+
         function copyToClipboard(text, button) {
             const textarea = document.createElement('textarea');
             textarea.value = text;
@@ -902,7 +905,7 @@
             document.body.removeChild(textarea);
 
             button.innerHTML = '<span class="material-symbols-outlined" style="font-size: 15px;">content_copy</span> Copied!';
-            
+
             setTimeout(() => {
                 button.innerHTML = '<span class="material-symbols-outlined" style="font-size: 14px;">content_copy</span> Copy';
             }, 3000);
@@ -916,7 +919,7 @@
                 textarea.value = '';
                 autoResize(textarea);
                 document.querySelector('.chat-input button').disabled = true;
-                
+
                 textarea.focus();
 
                 const allCopyButtons = document.querySelectorAll('.copy-btn');
@@ -933,41 +936,42 @@
     const messageDiv = document.createElement('div');
     messageDiv.className = 'message ' + sender;
 
-    // Create avatar div
-    const avatarDiv = document.createElement('div');
-    avatarDiv.className = 'avatar';
+    // Create avatar div  
+    const avatarDiv = document.createElement('div');  
+    avatarDiv.className = 'avatar';  
 
-    // Create content div
-    const contentDiv = document.createElement('div');
-    contentDiv.className = 'content';
+    // Create content div  
+    const contentDiv = document.createElement('div');  
+    contentDiv.className = 'content';  
 
     if (typeof text === 'string') {
-        // Case: text with literal <img> tag inside
+        // Case: raw HTML with <img>
         if (text.includes('<img')) {
-            contentDiv.innerHTML = text; // Render raw HTML with <img> tag
+            contentDiv.innerHTML = text;
         } else {
-            // Check if the text contains an image URL
-            const imageUrlPattern = /(https?:\/\/.*\.(?:png|jpg|jpeg|gif|webp))/i;
-            const match = text.match(imageUrlPattern);
+            const imageUrlPattern = /(https?:\/\/[^\s]+\.(png|jpg|jpeg|gif|webp))/gi;
+            const matches = [...text.matchAll(imageUrlPattern)];
 
-            if (match) {
-                const img = document.createElement('img');
-                img.src = match[1];
-                img.alt = "AI response image";
-                img.style.display = 'block';
-                img.style.marginTop = '5px';
-
-                const caption = text.replace(imageUrlPattern, '').trim();
-                if (caption) {
-                    const captionDiv = document.createElement('div');
-                    captionDiv.textContent = caption;
-                    captionDiv.style.marginBottom = '8px';
-                    contentDiv.appendChild(captionDiv);
+            if (matches.length) {
+                // If image(s) found in text
+                const modifiedText = text.replace(imageUrlPattern, '').trim();
+                if (modifiedText) {
+                    const textDiv = document.createElement('div');
+                    textDiv.textContent = modifiedText;
+                    textDiv.style.marginBottom = '8px';
+                    contentDiv.appendChild(textDiv);
                 }
 
-                contentDiv.appendChild(img);
+                matches.forEach(match => {
+                    const img = document.createElement('img');
+                    img.src = match[0];
+                    img.alt = "AI response image";
+                    img.style.display = 'block';
+                    img.style.marginTop = '5px';
+                    contentDiv.appendChild(img);
+                });
             } else {
-                // Just plain text — safe display and add copy button
+                // Just plain text
                 contentDiv.textContent = text;
 
                 if (sender === 'received') {
@@ -1001,9 +1005,9 @@
         contentDiv.appendChild(imageWrapper);
     }
 
-    messageDiv.appendChild(avatarDiv);
-    messageDiv.appendChild(contentDiv);
-    chatContainer.appendChild(messageDiv);
+    messageDiv.appendChild(avatarDiv);  
+    messageDiv.appendChild(contentDiv);  
+    chatContainer.appendChild(messageDiv);  
     chatContainer.scrollTop = chatContainer.scrollHeight;
 }
 
@@ -1018,13 +1022,17 @@
         const data = await response.json();
 
         if (data.reply) {
-            displayMessage(data.reply, 'received');
+            if (Array.isArray(data.reply)) {
+                data.reply.forEach(reply => displayMessage(reply, 'received'));
+            } else {
+                displayMessage(data.reply, 'received');
+            }
         }
     } catch (error) {
         console.error("Error fetching AI response:", error);
     }
 }
-    
+
         function toggleKebabMenu(event) {
             event.stopPropagation();
             const dropdown = document.querySelector('.kebab-dropdown');
@@ -1070,7 +1078,7 @@
             const dropdown = document.querySelector('.kebab-dropdown');
             dropdown.classList.remove('active');
         }
-  
+
         function toggleNews() {
             const newsContainer = document.getElementById('news-container');
             newsContainer.style.display = newsContainer.style.display === 'none' ? 'block' : 'none';
@@ -1097,7 +1105,7 @@
         function populateNews() {
             const newsItems = document.getElementById('news-items');
             newsItems.innerHTML = '';
-            
+
             sampleNews.forEach(news => {
                 const newsItem = document.createElement('div');
                 newsItem.className = 'news-item';

@@ -59,13 +59,12 @@ app.post("/api/command", async (req, res) => {
     const { message } = req.body;
     if (!message) return res.status(400).json({ reply: "❌ Message is required" });
 
-    // Respond to "prefix" or "Prefix"
     if (message.trim().toLowerCase() === "prefix") {
       return res.json({ reply: `🔹 My command prefix is: \`${PREFIX}\`` });
     }
 
     const cmd = handleCommand(message);
-    if (!cmd) return res.end(); // Ignore messages without prefix
+    if (!cmd) return res.end();
 
     // Built-in -ai command
     if (cmd.commandName === "ai") {
@@ -78,9 +77,7 @@ app.post("/api/command", async (req, res) => {
         let data;
         try {
           data = JSON.parse(response.data);
-          if (typeof data === "string") {
-            data = JSON.parse(data);
-          }
+          if (typeof data === "string") data = JSON.parse(data);
         } catch (parseErr) {
           console.error("Failed to parse AI response:", response.data);
           return res.status(500).json({ reply: "❌ AI returned invalid JSON format" });
@@ -107,9 +104,7 @@ app.post("/api/command", async (req, res) => {
 
         try {
           const response = await axios.get(url, {
-            headers: {
-              "User-Agent": "Mozilla/5.0"
-            }
+            headers: { "User-Agent": "Mozilla/5.0" }
           });
           await fs.writeFile(path.join(COMMANDS_DIR, fileName), response.data);
           loadCommands();
@@ -128,23 +123,31 @@ app.post("/api/command", async (req, res) => {
       return res.json({ reply: "❌ Invalid subcommand. Use: install <filename.js> <url> or list" });
     }
 
-    // Installed commands
     const command = commands[cmd.commandName];
     if (!command) return res.json({ reply: "❌ Command not found" });
+    if (typeof command.onStart !== "function") {
+      return res.json({ reply: "❌ This command does not support execution" });
+    }
 
-    const result = await command.onChat({
-      api: { sendMessage: (msg) => console.log(msg) },
+    const replies = [];
+
+    await command.onStart({
+      api: {
+        sendMessage: (msg) => {
+          replies.push(typeof msg === "string" ? msg : JSON.stringify(msg));
+        },
+      },
       event: { body: cmd.text },
       args: cmd.args,
       message: {
         reply: (content) => {
-          if (!res.headersSent) res.json({ reply: content });
+          replies.push(content);
         },
       },
     });
 
     if (!res.headersSent) {
-      res.json(result || { reply: "✅ Command executed" });
+      res.json({ reply: replies.length === 1 ? replies[0] : replies });
     }
   } catch (error) {
     console.error("Server Error:", error);
