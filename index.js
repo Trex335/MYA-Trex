@@ -23,13 +23,13 @@ const PREFIX = config.prefix;
 // Auto Uptime
 if (global.timeOutUptime) clearTimeout(global.timeOutUptime);
 if (config.autoUptime.enable) {
-  let myUrl =
-    config.autoUptime.url ||
-    (process.env.REPL_OWNER
+  let myUrl = config.autoUptime.url || (
+    process.env.REPL_OWNER
       ? `https://${process.env.REPL_SLUG}.${process.env.REPL_OWNER}.repl.co`
       : process.env.API_SERVER_EXTERNAL === "https://api.glitch.com"
       ? `https://${process.env.PROJECT_DOMAIN}.glitch.me`
-      : `http://localhost:${PORT}`);
+      : `http://localhost:${PORT}`
+  );
 
   let status = "ok";
   setTimeout(async function autoUptime() {
@@ -135,38 +135,6 @@ app.post("/api/command", async (req, res) => {
       }
     }
 
-    if (cmd.commandName === "cmd") {
-      const subCmd = cmd.args[0];
-      if (subCmd === "install" && cmd.args[1] && cmd.args[2]) {
-        const fileName = cmd.args[1];
-        const url = cmd.args[2];
-        if (!fileName.endsWith(".js")) return res.json({ reply: "❌ Only .js files can be installed" });
-
-        try {
-          const response = await axios.get(url, {
-            headers: { "User-Agent": "Mozilla/5.0" }
-          });
-          await fs.writeFile(path.join(COMMANDS_DIR, fileName), response.data);
-          loadCommands();
-          return res.json({ reply: `✅ Installed command: ${fileName}` });
-        } catch (err) {
-          return res.status(500).json({ reply: `❌ Install failed: ${err.message}` });
-        }
-      }
-
-      if (subCmd === "list") {
-        const listed = Object.entries(commands)
-          .filter(([k, v]) => v.config?.name === k)
-          .map(([name, cmd]) => {
-            const aliases = cmd.config.aliases?.length ? ` (aliases: ${cmd.config.aliases.join(", ")})` : "";
-            return `${PREFIX}${name}${aliases}`;
-          });
-        return res.json({ reply: `📜 Installed commands:\n${listed.join("\n") || "None"}` });
-      }
-
-      return res.json({ reply: "❌ Invalid subcommand. Use: install <filename.js> <url> or list" });
-    }
-
     const command = commands[cmd.commandName];
     if (!command) return res.json({ reply: "❌ Command not found" });
     if (typeof command.onStart !== "function") {
@@ -180,7 +148,9 @@ app.post("/api/command", async (req, res) => {
       },
       event: { body: cmd.text },
       args: cmd.args,
-      message: { reply: (content) => replies.push(content) }
+      message: {
+        reply: (content) => replies.push(content)
+      }
     });
 
     if (!res.headersSent) {
