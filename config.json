@@ -1,0 +1,14 @@
+{
+  "prefix": "!",
+  "autoUptime": {
+    "enable": true,
+    "timeInterval": 180000,
+    "url": null
+  },
+  "dashBoard": {
+    "port": 3000
+  },
+  "serverUptime": {
+    "port": 3000
+  }
+}

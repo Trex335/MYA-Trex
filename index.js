@@ -2,22 +2,70 @@ const express = require("express");
 const axios = require("axios");
 const path = require("path");
 const fs = require("fs-extra");
+const config = require("./config.json");
+
+// Global setup
+global.GoatBot = { config };
+global.utils = {
+  log: {
+    info: (...args) => console.log("[INFO]", ...args),
+    err: (...args) => console.error("[ERROR]", ...args)
+  },
+  getText: (category, key, val) => `✅ Uptime system is active at: ${val}`
+};
 
 const app = express();
-const PORT = process.env.PORT || 3000;
-
-// Configuration
+const PORT = process.env.PORT || config.dashBoard.port;
 const COMMANDS_DIR = path.join(__dirname, "commands");
 const PUBLIC_DIR = path.join(__dirname, "public");
-const PREFIX = "-";
+const PREFIX = config.prefix;
 
-// Ensure directories exist
+// Auto Uptime
+if (global.timeOutUptime) clearTimeout(global.timeOutUptime);
+if (config.autoUptime.enable) {
+  let myUrl =
+    config.autoUptime.url ||
+    (process.env.REPL_OWNER
+      ? `https://${process.env.REPL_SLUG}.${process.env.REPL_OWNER}.repl.co`
+      : process.env.API_SERVER_EXTERNAL === "https://api.glitch.com"
+      ? `https://${process.env.PROJECT_DOMAIN}.glitch.me`
+      : `http://localhost:${PORT}`);
+
+  let status = "ok";
+  setTimeout(async function autoUptime() {
+    try {
+      await axios.get(myUrl + "/uptime");
+      if (status !== "ok") {
+        status = "ok";
+        global.utils.log.info("UPTIME", "Bot is online");
+      }
+    } catch (e) {
+      const err = e.response?.data || e;
+      if (status !== "ok") return;
+      status = "failed";
+
+      if (err.statusAccountBot === "can't login") {
+        global.utils.log.err("UPTIME", "Can't login account bot");
+      } else if (err.statusAccountBot === "block spam") {
+        global.utils.log.err("UPTIME", "Your account is blocked");
+      }
+    }
+    global.timeOutUptime = setTimeout(autoUptime, config.autoUptime.timeInterval);
+  }, config.autoUptime.timeInterval);
+
+  global.utils.log.info("AUTO UPTIME", global.utils.getText("autoUptime", "autoUptimeTurnedOn", myUrl));
+}
+
+// Express setup
 fs.ensureDirSync(COMMANDS_DIR);
 fs.ensureDirSync(PUBLIC_DIR);
-
-// Middleware
 app.use(express.json());
 app.use(express.static(PUBLIC_DIR));
+
+// Routes
+app.get("/uptime", (req, res) => {
+  res.send("✅ Bot is alive");
+});
 
 // Command loader
 const commands = {};
@@ -32,6 +80,9 @@ function loadCommands() {
       const cmd = require(path.join(COMMANDS_DIR, file));
       if (cmd.config?.name) {
         commands[cmd.config.name] = cmd;
+        if (Array.isArray(cmd.config.aliases)) {
+          cmd.config.aliases.forEach(alias => commands[alias] = cmd);
+        }
         console.log(`✅ Loaded command: ${PREFIX}${cmd.config.name}`);
       }
     } catch (err) {
@@ -39,21 +90,18 @@ function loadCommands() {
     }
   });
 }
-
 loadCommands();
 
-// Parse input message
+// Handle input
 function handleCommand(input) {
   if (!input.startsWith(PREFIX)) return null;
-
   const args = input.slice(PREFIX.length).trim().split(/\s+/);
   const commandName = args.shift().toLowerCase();
   const text = args.join(" ");
-
   return { commandName, args, text };
 }
 
-// Command API
+// API handler
 app.post("/api/command", async (req, res) => {
   try {
     const { message } = req.body;
@@ -66,7 +114,6 @@ app.post("/api/command", async (req, res) => {
     const cmd = handleCommand(message);
     if (!cmd) return res.end();
 
-    // Built-in -ai command
     if (cmd.commandName === "ai") {
       try {
         const response = await axios.get(
@@ -78,29 +125,22 @@ app.post("/api/command", async (req, res) => {
         try {
           data = JSON.parse(response.data);
           if (typeof data === "string") data = JSON.parse(data);
-        } catch (parseErr) {
-          console.error("Failed to parse AI response:", response.data);
+        } catch {
           return res.status(500).json({ reply: "❌ AI returned invalid JSON format" });
         }
 
-        const reply = data?.response || JSON.stringify(data) || "⚠️ No response from AI";
-        return res.json({ reply });
+        return res.json({ reply: data?.response || JSON.stringify(data) || "⚠️ No response from AI" });
       } catch (aiError) {
-        console.error("AI API Error:", aiError.message);
         return res.status(500).json({ reply: `❌ AI Error: ${aiError.message}` });
       }
     }
 
-    // Built-in -cmd commands
     if (cmd.commandName === "cmd") {
       const subCmd = cmd.args[0];
       if (subCmd === "install" && cmd.args[1] && cmd.args[2]) {
         const fileName = cmd.args[1];
         const url = cmd.args[2];
-
-        if (!fileName.endsWith(".js")) {
-          return res.json({ reply: "❌ Only .js files can be installed" });
-        }
+        if (!fileName.endsWith(".js")) return res.json({ reply: "❌ Only .js files can be installed" });
 
         try {
           const response = await axios.get(url, {
@@ -115,9 +155,13 @@ app.post("/api/command", async (req, res) => {
       }
 
       if (subCmd === "list") {
-        return res.json({
-          reply: `📜 Installed commands:\n${Object.keys(commands).map(c => PREFIX + c).join("\n") || "None"}`
-        });
+        const listed = Object.entries(commands)
+          .filter(([k, v]) => v.config?.name === k)
+          .map(([name, cmd]) => {
+            const aliases = cmd.config.aliases?.length ? ` (aliases: ${cmd.config.aliases.join(", ")})` : "";
+            return `${PREFIX}${name}${aliases}`;
+          });
+        return res.json({ reply: `📜 Installed commands:\n${listed.join("\n") || "None"}` });
       }
 
       return res.json({ reply: "❌ Invalid subcommand. Use: install <filename.js> <url> or list" });
@@ -130,32 +174,26 @@ app.post("/api/command", async (req, res) => {
     }
 
     const replies = [];
-
     await command.onStart({
       api: {
-        sendMessage: (msg) => {
-          replies.push(typeof msg === "string" ? msg : JSON.stringify(msg));
-        },
+        sendMessage: (msg) => replies.push(typeof msg === "string" ? msg : JSON.stringify(msg))
       },
       event: { body: cmd.text },
       args: cmd.args,
-      message: {
-        reply: (content) => {
-          replies.push(content);
-        },
-      },
+      message: { reply: (content) => replies.push(content) }
     });
 
     if (!res.headersSent) {
       res.json({ reply: replies.length === 1 ? replies[0] : replies });
     }
+
   } catch (error) {
     console.error("Server Error:", error);
     res.status(500).json({ reply: `❌ Server Error: ${error.message}` });
   }
 });
 
-// Start the server
+// Start server
 app.listen(PORT, () => {
   console.log(`🚀 Server running at http://localhost:${PORT}`);
   console.log(`🔹 Prefix: "${PREFIX}"`);

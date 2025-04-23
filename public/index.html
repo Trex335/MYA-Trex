@@ -945,44 +945,51 @@
     contentDiv.className = 'content';  
 
     if (typeof text === 'string') {
-        // Case: raw HTML with <img>
-        if (text.includes('<img')) {
+        // Case: raw HTML with <img> or <audio>
+        if (text.includes('<img') || text.includes('<audio')) {
             contentDiv.innerHTML = text;
         } else {
-            const imageUrlPattern = /(https?:\/\/[^\s]+\.(png|jpg|jpeg|gif|webp))/gi;
-            const matches = [...text.matchAll(imageUrlPattern)];
+            const imagePattern = /(https?:\/\/[^\s]+\.(png|jpg|jpeg|gif|webp))/gi;
+            const audioPattern = /(https?:\/\/[^\s]+\.(mp3|ogg|wav|m4a|mp4))/gi;
 
-            if (matches.length) {
-                // If image(s) found in text
-                const modifiedText = text.replace(imageUrlPattern, '').trim();
-                if (modifiedText) {
-                    const textDiv = document.createElement('div');
-                    textDiv.textContent = modifiedText;
-                    textDiv.style.marginBottom = '8px';
-                    contentDiv.appendChild(textDiv);
-                }
+            const imageMatches = [...text.matchAll(imagePattern)];
+            const audioMatches = [...text.matchAll(audioPattern)];
 
-                matches.forEach(match => {
-                    const img = document.createElement('img');
-                    img.src = match[0];
-                    img.alt = "AI response image";
-                    img.style.display = 'block';
-                    img.style.marginTop = '5px';
-                    contentDiv.appendChild(img);
-                });
-            } else {
-                // Just plain text
-                contentDiv.textContent = text;
+            const modifiedText = text.replace(imagePattern, '').replace(audioPattern, '').trim();
+            if (modifiedText) {
+                const textDiv = document.createElement('div');
+                textDiv.textContent = modifiedText;
+                textDiv.style.marginBottom = '8px';
+                contentDiv.appendChild(textDiv);
+            }
 
-                if (sender === 'received') {
-                    const copyBtn = document.createElement('button');
-                    copyBtn.innerHTML = '<span class="material-symbols-outlined" style="font-size: 14px;">content_copy</span> Copy';
-                    copyBtn.className = 'copy-btn';
-                    copyBtn.onclick = function () {
-                        copyToClipboard(text, copyBtn);
-                    };
-                    contentDiv.appendChild(copyBtn);
-                }
+            // Embed images
+            imageMatches.forEach(match => {
+                const img = document.createElement('img');
+                img.src = match[0];
+                img.alt = "AI response image";
+                img.style.display = 'block';
+                img.style.marginTop = '5px';
+                contentDiv.appendChild(img);
+            });
+
+            // Embed audio
+            audioMatches.forEach(match => {
+                const audio = document.createElement('audio');
+                audio.controls = true;
+                audio.src = match[0];
+                audio.style.marginTop = '10px';
+                contentDiv.appendChild(audio);
+            });
+
+            if (!imageMatches.length && !audioMatches.length && sender === 'received') {
+                const copyBtn = document.createElement('button');
+                copyBtn.innerHTML = '<span class="material-symbols-outlined" style="font-size: 14px;">content_copy</span> Copy';
+                copyBtn.className = 'copy-btn';
+                copyBtn.onclick = function () {
+                    copyToClipboard(text, copyBtn);
+                };
+                contentDiv.appendChild(copyBtn);
             }
         }
     } else if (Array.isArray(text)) {
