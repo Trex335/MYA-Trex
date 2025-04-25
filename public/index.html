@@ -275,19 +275,34 @@
         }
 
         .message .content {
-            flex-grow: 1;
-            padding: 10px;
-            border-radius: 15px;
-            position: relative;
-            overflow: hidden;
-        }
+    flex-grow: 1;
+    padding: 10px;
+    border-radius: 15px;
+    position: relative;
+    overflow: hidden;
+    background-color: #f2f3f5;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
 
-        .message img {
-            width: calc(100% + 20px);
-            margin: 10px -10px;
-            display: block;
-            border-radius: 8px;
-        }
+.message.sent .content {
+    background-color: #dcf8c6;
+}
+
+.message img {
+    width: 100%;
+    margin: 6px 0 0 0;
+    display: block;
+    border-radius: 12px;
+    object-fit: cover;
+    box-shadow: 0 3px 12px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.message img:hover {
+    transform: scale(1.02);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.15);
+}
+
 
         .message.received {
             flex-direction: row;
@@ -729,7 +744,82 @@
         </button>
     </div>
 </div>
+  
+ <div id="zoom-overlay" style="
+    display: none;
+    justify-content: center;
+    align-items: center;
+    position: fixed;
+    top: 0; left: 0;
+    width: 100vw; height: 100vh;
+    background: rgba(0, 0, 0, 0.95);
+    z-index: 9999;
+">
+    <!-- Click blocker for background -->
+    <div onclick="closeZoom()" style="
+        position: absolute;
+        width: 100%;
+        height: 100%;
+    "></div>
 
+    <!-- Foreground Content -->
+    <div id="zoom-content" style="
+        position: relative;
+        z-index: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+    ">
+        <!-- Top Controls -->
+        <div style="
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            display: flex;
+            gap: 16px;
+        ">
+            <!-- Close Icon -->
+            <button onclick="closeZoom()" style="
+                background: none;
+                border: none;
+                cursor: pointer;
+                padding: 0;
+            ">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18" />
+                    <line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
+            </button>
+
+            <!-- Download Icon -->
+            <!-- Download Icon -->
+<button id="download-btn" style="
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+">
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+        <polyline points="7 10 12 15 17 10" />
+        <line x1="12" y1="15" x2="12" y2="3" />
+    </svg>
+</button>
+            </a>
+        </div>
+
+        <!-- Zoomed Image -->
+        <img id="zoom-image" style="
+            width: 100vw;
+            height: 100vh;
+            object-fit: contain;
+            border-radius: 0;
+        " />
+    </div>
+</div>
+
+        
     <a class="gotopbtn" href="#"><i class="fas fa-arrow-up"></i></a>
 
     <div class="overlay" id="overlay"></div>
@@ -991,9 +1081,16 @@
         const imagePattern = /(https?:\/\/[^\s]+\.(png|jpg|jpeg|gif|webp))/gi;
         const audioPattern = /(https?:\/\/[^\s]+\.(mp3|ogg|wav|m4a|mp4))/gi;
 
-        let modifiedText = text;
+        // Extract media URLs
+        const imageMatches = [...text.matchAll(imagePattern)];
+        const audioMatches = [...text.matchAll(audioPattern)];
 
-        // Clean and capture text (if any)
+        // Remove all media URLs from text
+        let modifiedText = text;
+        [...imageMatches, ...audioMatches].forEach(match => {
+            modifiedText = modifiedText.replace(match[0], '');
+        });
+
         modifiedText = modifiedText.trim();
         if (modifiedText) {
             const textDiv = document.createElement('div');
@@ -1001,24 +1098,22 @@
             contentDiv.appendChild(textDiv);
         }
 
-        // Handle images
-        [...text.matchAll(imagePattern)].forEach(match => {
+        // Render images
+        imageMatches.forEach(match => {
             const img = document.createElement('img');
             img.src = match[0];
             img.alt = "Image";
             img.style.marginTop = '6px';
             contentDiv.appendChild(img);
-            modifiedText = modifiedText.replace(match[0], '');
         });
 
-        // Handle audio
-        [...text.matchAll(audioPattern)].forEach(match => {
+        // Render audio
+        audioMatches.forEach(match => {
             const audio = document.createElement('audio');
             audio.controls = true;
             audio.src = match[0];
             audio.style.marginTop = '6px';
             contentDiv.appendChild(audio);
-            modifiedText = modifiedText.replace(match[0], '');
         });
 
         messageDiv.appendChild(avatarDiv);
@@ -1075,6 +1170,8 @@
             button.innerHTML = '<span style="font-size: 14px;">Copy</span>';
         }, 3000);
     }
+
+
            function toggleKebabMenu(event) {
             event.stopPropagation();
             const dropdown = document.querySelector('.kebab-dropdown');
@@ -1159,7 +1256,44 @@
                 newsItems.appendChild(newsItem);
             });
         }
+   
+     // Handle image click to open zoom view
+document.addEventListener('click', function (e) {
+    if (e.target.tagName === 'IMG' && e.target.closest('.message')) {
+        openZoom(e.target.src);
+    }
+});
 
+// Open zoom overlay
+function openZoom(src) {
+    document.body.style.overflow = 'hidden';
+    const overlay = document.getElementById('zoom-overlay');
+    const zoomImage = document.getElementById('zoom-image');
+
+    zoomImage.src = src;
+    overlay.style.display = 'flex';
+}
+
+// Close zoom overlay
+function closeZoom() {
+    document.body.style.overflow = '';
+    document.getElementById('zoom-overlay').style.display = 'none';
+}
+
+// Handle image download
+document.getElementById('download-btn').addEventListener('click', function (e) {
+    e.stopPropagation(); // Prevent background click from closing
+    const image = document.getElementById('zoom-image');
+    const link = document.createElement('a');
+    link.href = image.src;
+
+    // Optional: auto-generate filename
+    link.download = image.src.split('/').pop().split('?')[0] || 'image.jpg';
+
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+});
         document.getElementById('user-input').addEventListener('keypress', function(e) {
             if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault();
@@ -1207,6 +1341,7 @@
                 document.querySelector('.news-container').style.display = 'none';
             }
         });
+  
 
         function handleScroll() {
             const goTopBtn = document.querySelector('.gotopbtn');
@@ -1266,6 +1401,19 @@
             document.getElementById('overlay').style.display = 'none';
         }
 
+    function openZoom(src) {
+    document.body.style.overflow = 'hidden';
+    const overlay = document.getElementById('zoom-overlay');
+    const zoomImage = document.getElementById('zoom-image');
+    zoomImage.src = src;
+    overlay.style.display = 'flex';
+}
+
+function closeZoom() {
+    document.body.style.overflow = '';
+    document.getElementById('zoom-overlay').style.display = 'none';
+}
+
         document.getElementById('overlay').addEventListener('click', function() {
             document.querySelectorAll('.about-container, .features-container, .help-container').forEach(container => {
                 container.style.display = 'none';
@@ -1278,5 +1426,6 @@
             showContainer('chat');
             document.querySelector('.chat-input').style.display = 'flex';
         }
+  
     </script>
 </html>

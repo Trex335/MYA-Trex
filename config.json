@@ -1,5 +1,5 @@
 {
-  "prefix": "!",
+  "prefix": "-",
   "autoUptime": {
     "enable": true,
     "timeInterval": 180000,
