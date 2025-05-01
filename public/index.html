@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -708,6 +709,7 @@
                 <a href="#" onclick="toggleTheme()">Toggle Theme</a>
                 <a href="#" onclick="clearChat()">Clear Chat</a>
                 <a href="#" onclick="exportChat()">Export Chat</a>
+                <a href="#" onclick="exportChatPDF()">Download PDF</a>
                 <a href="#" onclick="showSettings()">Settings</a>
             </div>
         </div>
@@ -744,7 +746,7 @@
         </button>
     </div>
 </div>
-  
+
  <div id="zoom-overlay" style="
     display: none;
     justify-content: center;
@@ -755,13 +757,6 @@
     background: rgba(0, 0, 0, 0.95);
     z-index: 9999;
 ">
-    <!-- Click blocker for background -->
-    <div onclick="closeZoom()" style="
-        position: absolute;
-        width: 100%;
-        height: 100%;
-    "></div>
-
     <!-- Foreground Content -->
     <div id="zoom-content" style="
         position: relative;
@@ -778,6 +773,7 @@
             right: 20px;
             display: flex;
             gap: 16px;
+            z-index: 2;
         ">
             <!-- Close Icon -->
             <button onclick="closeZoom()" style="
@@ -793,19 +789,17 @@
             </button>
 
             <!-- Download Icon -->
-            <!-- Download Icon -->
-<button id="download-btn" style="
-    background: none;
-    border: none;
-    cursor: pointer;
-    padding: 0;
-">
-    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-        <polyline points="7 10 12 15 17 10" />
-        <line x1="12" y1="15" x2="12" y2="3" />
-    </svg>
-</button>
+            <a id="download-btn" download style="
+                background: none;
+                border: none;
+                cursor: pointer;
+                padding: 0;
+            ">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                    <polyline points="7 10 12 15 17 10" />
+                    <line x1="12" y1="15" x2="12" y2="3" />
+                </svg>
             </a>
         </div>
 
@@ -815,11 +809,22 @@
             height: 100vh;
             object-fit: contain;
             border-radius: 0;
+            z-index: 1;
         " />
     </div>
+
+    <!-- Click blocker for background -->
+    <div onclick="closeZoom()" style="
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        top: 0;
+        left: 0;
+        z-index: 0;
+    "></div>
 </div>
 
-        
+
     <a class="gotopbtn" href="#"><i class="fas fa-arrow-up"></i></a>
 
     <div class="overlay" id="overlay"></div>
@@ -959,205 +964,217 @@
             }
         }
 
+let replyToText = null;
 
-    let replyToText = null;
+document.querySelector('.chat-input button').addEventListener('touchstart', function (e) {
+    e.preventDefault();
+    sendMessage();
+});
 
-    document.querySelector('.chat-input button').addEventListener('touchstart', function (e) {
-        e.preventDefault();
-        sendMessage();
-    });
+document.getElementById('user-input').addEventListener('input', function () {
+    autoResize(this);
+    document.querySelector('.chat-input button').disabled = this.value.trim().length === 0;
+});
 
-    document.getElementById('user-input').addEventListener('input', function () {
-        autoResize(this);
-        document.querySelector('.chat-input button').disabled = this.value.trim().length === 0;
-    });
+function autoResize(textarea) {
+    textarea.style.height = 'auto';
+    textarea.style.height = (textarea.scrollHeight > 100 ? 100 : textarea.scrollHeight) + 'px';
+}
 
-    function autoResize(textarea) {
-        textarea.style.height = 'auto';
-        textarea.style.height = (textarea.scrollHeight > 100 ? 100 : textarea.scrollHeight) + 'px';
-    }
+function handleTouchStart(e) {
+    isLongPress = false;
+    e.currentTarget.classList.add('no-select');
+    longPressTimer = setTimeout(() => {
+        isLongPress = true;
+        showMessageContextMenu(e);
+    }, 500);
+}
 
-    function handleTouchStart(e) {
-        isLongPress = false;
-        e.currentTarget.classList.add('no-select');
-        longPressTimer = setTimeout(() => {
-            isLongPress = true;
-            showMessageContextMenu(e);
-        }, 500);
-    }
+function handleTouchMove(e) {
+    clearTimeout(longPressTimer);
+    e.currentTarget.classList.remove('no-select');
+}
 
-    function handleTouchMove(e) {
-        clearTimeout(longPressTimer);
-        e.currentTarget.classList.remove('no-select');
-    }
+function handleTouchEnd(e) {
+    clearTimeout(longPressTimer);
+    e.currentTarget.classList.remove('no-select');
+}
 
-    function handleTouchEnd(e) {
-        clearTimeout(longPressTimer);
-        e.currentTarget.classList.remove('no-select');
-    }
+function showMessageContextMenu(e) {
+    e.preventDefault();
+    const message = e.currentTarget || e.target.closest('.message');
+    if (!message) return;
 
-    function showMessageContextMenu(e) {
-        e.preventDefault();
-        const message = e.currentTarget || e.target.closest('.message');
-        if (!message) return;
+    const contentDiv = message.querySelector('.content');
+    if (!contentDiv) return;
 
-        const contentDiv = message.querySelector('.content');
-        if (!contentDiv) return;
+    const messageText = contentDiv.textContent || '';
 
-        const messageText = contentDiv.textContent || '';
+    document.querySelectorAll('.message-context-menu').forEach(menu => menu.remove());
 
-        document.querySelectorAll('.message-context-menu').forEach(menu => menu.remove());
+    const contextMenu = document.createElement('div');
+    contextMenu.className = 'message-context-menu active';
+    contextMenu.style.left = `${(e.touches?.[0]?.pageX || e.clientX)}px`;
+    contextMenu.style.top = `${(e.touches?.[0]?.pageY || e.clientY)}px`;
 
-        const contextMenu = document.createElement('div');
-        contextMenu.className = 'message-context-menu active';
-        contextMenu.style.left = `${(e.touches?.[0]?.pageX || e.clientX)}px`;
-        contextMenu.style.top = `${(e.touches?.[0]?.pageY || e.clientY)}px`;
+    const copyButton = document.createElement('button');
+    copyButton.textContent = 'Copy';
+    copyButton.onclick = () => {
+        copyToClipboard(messageText, copyButton);
+        contextMenu.remove();
+    };
 
-        const copyButton = document.createElement('button');
-        copyButton.textContent = 'Copy';
-        copyButton.onclick = () => {
-            copyToClipboard(messageText, copyButton);
-            contextMenu.remove();
-        };
-
-        const replyButton = document.createElement('button');
-        replyButton.textContent = 'Reply';
-        replyButton.onclick = () => {
-            const textarea = document.getElementById('user-input');
-            replyToText = messageText;
-            textarea.focus();
-            contextMenu.remove();
-            showReplyPreview();
-        };
-
-        contextMenu.appendChild(copyButton);
-        contextMenu.appendChild(replyButton);
-        document.body.appendChild(contextMenu);
-
-        document.addEventListener('click', () => contextMenu.remove(), { once: true });
-    }
-
-    function showReplyPreview() {
-        const replyContainer = document.getElementById('reply-preview-container');
-        replyContainer.innerHTML = `
-            <div class="reply-preview">
-                Replying to: ${replyToText.substring(0, 80)}
-                <button onclick="clearReply()" style="float:right; font-size:12px;">✕</button>
-            </div>
-        `;
-    }
-
-    function clearReply() {
-        replyToText = null;
-        document.getElementById('reply-preview-container').innerHTML = '';
-    }
-
-    function displayMessage(text, sender, repliedTo = null) {
-        const chatContainer = document.getElementById('chat-container');
-        const messageDiv = document.createElement('div');
-        messageDiv.className = `message ${sender}`;
-
-        const avatarDiv = document.createElement('div');
-        avatarDiv.className = 'avatar';
-
-        const contentDiv = document.createElement('div');
-        contentDiv.className = 'content';
-
-        if (repliedTo) {
-            const replyBubble = document.createElement('div');
-            replyBubble.className = 'reply-preview';
-            replyBubble.textContent = repliedTo;
-            contentDiv.appendChild(replyBubble);
-        }
-
-        messageDiv.addEventListener('touchstart', handleTouchStart);
-        messageDiv.addEventListener('touchend', handleTouchEnd);
-        messageDiv.addEventListener('touchmove', handleTouchMove);
-        messageDiv.addEventListener('contextmenu', e => {
-            e.preventDefault();
-            showMessageContextMenu(e);
-        });
-
-        const imagePattern = /(https?:\/\/[^\s]+\.(png|jpg|jpeg|gif|webp))/gi;
-        const audioPattern = /(https?:\/\/[^\s]+\.(mp3|ogg|wav|m4a|mp4))/gi;
-
-        // Extract media URLs
-        const imageMatches = [...text.matchAll(imagePattern)];
-        const audioMatches = [...text.matchAll(audioPattern)];
-
-        // Remove all media URLs from text
-        let modifiedText = text;
-        [...imageMatches, ...audioMatches].forEach(match => {
-            modifiedText = modifiedText.replace(match[0], '');
-        });
-
-        modifiedText = modifiedText.trim();
-        if (modifiedText) {
-            const textDiv = document.createElement('div');
-            textDiv.textContent = modifiedText;
-            contentDiv.appendChild(textDiv);
-        }
-
-        // Render images
-        imageMatches.forEach(match => {
-            const img = document.createElement('img');
-            img.src = match[0];
-            img.alt = "Image";
-            img.style.marginTop = '6px';
-            contentDiv.appendChild(img);
-        });
-
-        // Render audio
-        audioMatches.forEach(match => {
-            const audio = document.createElement('audio');
-            audio.controls = true;
-            audio.src = match[0];
-            audio.style.marginTop = '6px';
-            contentDiv.appendChild(audio);
-        });
-
-        messageDiv.appendChild(avatarDiv);
-        messageDiv.appendChild(contentDiv);
-        chatContainer.appendChild(messageDiv);
-        chatContainer.scrollTop = chatContainer.scrollHeight;
-    }
-
-    async function fetchChatResponse(userInput) {
-        try {
-            const response = await fetch('/api/command', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ message: userInput }),
-            });
-
-            const data = await response.json();
-
-            if (data.reply) {
-                if (Array.isArray(data.reply)) {
-                    data.reply.forEach(reply => displayMessage(reply, 'received'));
-                } else {
-                    displayMessage(data.reply, 'received');
-                }
-            }
-        } catch (error) {
-            console.error("Error fetching AI response:", error);
-        }
-    }
-
-    function sendMessage() {
+    const replyButton = document.createElement('button');
+    replyButton.textContent = 'Reply';
+    replyButton.onclick = () => {
         const textarea = document.getElementById('user-input');
-        const userInput = textarea.value.trim();
-        if (userInput) {
-            displayMessage(userInput, 'sent', replyToText);
-            textarea.value = '';
-            autoResize(textarea);
-            document.querySelector('.chat-input button').disabled = true;
-            fetchChatResponse(userInput);
-            clearReply();
-        }
+        replyToText = messageText;
+        textarea.focus();
+        contextMenu.remove();
+        showReplyPreview();
+    };
+
+    contextMenu.appendChild(copyButton);
+    contextMenu.appendChild(replyButton);
+    document.body.appendChild(contextMenu);
+
+    document.addEventListener('click', () => contextMenu.remove(), { once: true });
+}
+
+function showReplyPreview() {
+    const replyContainer = document.getElementById('reply-preview-container');
+    replyContainer.innerHTML = `
+        <div class="reply-preview">
+            Replying to: ${replyToText.substring(0, 80)}
+            <button onclick="clearReply()" style="float:right; font-size:12px;">✕</button>
+        </div>
+    `;
+}
+
+function clearReply() {
+    replyToText = null;
+    document.getElementById('reply-preview-container').innerHTML = '';
+}
+
+function displayMessage(text, sender, repliedTo = null) {
+    const chatContainer = document.getElementById('chat-container');
+    const messageDiv = document.createElement('div');
+    messageDiv.className = `message ${sender}`;
+
+    const avatarDiv = document.createElement('div');
+    avatarDiv.className = 'avatar';
+
+    const contentDiv = document.createElement('div');
+    contentDiv.className = 'content';
+
+    if (repliedTo) {
+        const replyBubble = document.createElement('div');
+        replyBubble.className = 'reply-preview';
+        replyBubble.textContent = repliedTo;
+        contentDiv.appendChild(replyBubble);
     }
 
-    function copyToClipboard(text, button) {
+    messageDiv.addEventListener('touchstart', handleTouchStart);
+    messageDiv.addEventListener('touchend', handleTouchEnd);
+    messageDiv.addEventListener('touchmove', handleTouchMove);
+    messageDiv.addEventListener('contextmenu', e => {
+        e.preventDefault();
+        showMessageContextMenu(e);
+    });
+
+    const imagePattern = /(https?:\/\/[^\s]+\.(png|jpg|jpeg|gif|webp))/gi;
+    const audioPattern = /(https?:\/\/[^\s]+\.(mp3|ogg|wav|m4a|mp4))/gi;
+
+    const imageMatches = [...text.matchAll(imagePattern)];
+    const audioMatches = [...text.matchAll(audioPattern)];
+
+    let modifiedText = text;
+    [...imageMatches, ...audioMatches].forEach(match => {
+        modifiedText = modifiedText.replace(match[0], '');
+    });
+
+    modifiedText = modifiedText.trim();
+    if (modifiedText) {
+        const textDiv = document.createElement('div');
+        textDiv.textContent = modifiedText;
+        contentDiv.appendChild(textDiv);
+    }
+
+    imageMatches.forEach(match => {
+        const img = document.createElement('img');
+        img.src = match[0];
+        img.alt = "Image";
+        img.style.marginTop = '6px';
+        contentDiv.appendChild(img);
+    });
+
+    audioMatches.forEach(match => {
+        const audio = document.createElement('audio');
+        audio.controls = true;
+        audio.src = match[0];
+        audio.style.marginTop = '6px';
+        contentDiv.appendChild(audio);
+    });
+
+    messageDiv.appendChild(avatarDiv);
+    messageDiv.appendChild(contentDiv);
+    chatContainer.appendChild(messageDiv);
+    chatContainer.scrollTop = chatContainer.scrollHeight;
+
+    return messageDiv; // <=== return the div!
+}
+
+async function fetchChatResponse(userInput, waitingMsg = null) {
+    try {
+        const response = await fetch('/api/command', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ message: userInput }),
+        });
+
+        const data = await response.json();
+
+        if (waitingMsg) {
+            waitingMsg.remove(); // Remove waiting message when reply arrives
+        }
+
+        if (data.reply) {
+            if (Array.isArray(data.reply)) {
+                data.reply.forEach(reply => displayMessage(reply, 'received'));
+            } else {
+                displayMessage(data.reply, 'received');
+            }
+        }
+    } catch (error) {
+        console.error("Error fetching AI response:", error);
+        if (waitingMsg) {
+            waitingMsg.remove();
+        }
+        displayMessage("❌ | Failed to fetch response. Please try again.", 'received');
+    }
+}
+
+function sendMessage() {
+    const textarea = document.getElementById('user-input');
+    const userInput = textarea.value.trim();
+    if (userInput) {
+        displayMessage(userInput, 'sent', replyToText);
+        textarea.value = '';
+        autoResize(textarea);
+        document.querySelector('.chat-input button').disabled = true;
+        clearReply();
+
+        // Check if the message is a command (starts with "/")
+        if (userInput.startsWith("/")) {
+            const waitingMsg = displayMessage("🔄 | Please wait, processing your command...", 'received');
+            fetchChatResponse(userInput, waitingMsg);
+        } else {
+            fetchChatResponse(userInput);
+        }
+    }
+}
+
+  function copyToClipboard(text, button) {
         const textarea = document.createElement('textarea');
         textarea.value = text;
         document.body.appendChild(textarea);
@@ -1212,6 +1229,125 @@
             dropdown.classList.remove('active');
         }
 
+          function exportChatPDF() {
+    const chatContainer = document.getElementById('chat-container');
+    const dropdown = document.querySelector('.kebab-dropdown');
+
+    const clone = chatContainer.cloneNode(true);
+
+    // Show downloading alert
+    const downloadingAlert = document.createElement('div');
+    downloadingAlert.id = 'downloading-alert';
+    downloadingAlert.textContent = 'Preparing download, please wait...';
+    downloadingAlert.style.position = 'fixed';
+    downloadingAlert.style.top = '20px';
+    downloadingAlert.style.left = '50%';
+    downloadingAlert.style.transform = 'translateX(-50%)';
+    downloadingAlert.style.padding = '10px 20px';
+    downloadingAlert.style.backgroundColor = '#333';
+    downloadingAlert.style.color = '#fff';
+    downloadingAlert.style.fontSize = '16px';
+    downloadingAlert.style.borderRadius = '8px';
+    downloadingAlert.style.zIndex = '9999';
+    document.body.appendChild(downloadingAlert);
+
+    // Find all images and replace src with base64
+    const images = clone.querySelectorAll('img');
+    const promises = [];
+
+    images.forEach(img => {
+        const promise = new Promise((resolve, reject) => {
+            const canvas = document.createElement('canvas');
+            const context = canvas.getContext('2d');
+            const originalImage = new Image();
+            originalImage.crossOrigin = 'anonymous';
+            originalImage.src = img.src;
+
+            originalImage.onload = () => {
+                try {
+                    // Store original display style to restore later
+                    const originalDisplay = img.style.display;
+                    const originalWidth = img.style.width;
+                    const originalHeight = img.style.height;
+
+                    // Temporarily make image visible and full size for capture
+                    img.style.display = 'block';
+                    img.style.width = 'auto';
+                    img.style.height = 'auto';
+                    img.style.maxWidth = 'none';
+                    img.style.maxHeight = 'none';
+
+                    canvas.width = originalImage.naturalWidth;
+                    canvas.height = originalImage.naturalHeight;
+                    context.drawImage(originalImage, 0, 0);
+
+                    const dataURL = canvas.toDataURL('image/png');
+                    img.src = dataURL;
+
+                    // Restore original styles
+                    img.style.display = originalDisplay;
+                    img.style.width = originalWidth;
+                    img.style.height = originalHeight;
+
+                    resolve();
+                } catch (error) {
+                    console.error('Error converting image:', error);
+                    resolve();
+                }
+            };
+
+            originalImage.onerror = () => {
+                console.error('Error loading image:', img.src);
+                resolve();
+            };
+        });
+        promises.push(promise);
+    });
+
+    Promise.all(promises).then(() => {
+        const opt = {
+            margin: 10,
+            filename: 'chat-export.pdf',
+            image: { type: 'jpeg', quality: 1 },
+            html2canvas: { 
+                scale: 2,
+                useCORS: true,
+                allowTaint: true,
+                scrollX: 0,
+                scrollY: 0,
+                windowWidth: document.documentElement.scrollWidth,
+                windowHeight: document.documentElement.scrollHeight
+            },
+            jsPDF: { 
+                unit: 'mm',
+                format: 'a4',
+                orientation: 'portrait',
+                hotfixes: ['px_scaling'] 
+            },
+            pagebreak: { 
+                mode: ['avoid-all', 'css', 'legacy'],
+                before: '.page-break' 
+            }
+        };
+
+        // Temporarily modify image styles for PDF generation
+        const allImages = clone.querySelectorAll('img');
+        allImages.forEach(img => {
+            img.style.maxWidth = '100%';
+            img.style.height = 'auto';
+            img.style.display = 'block';
+        });
+
+        html2pdf().set(opt).from(clone).save().then(() => {
+            downloadingAlert.remove();
+        }).catch((error) => {
+            console.error('Error generating PDF:', error);
+            downloadingAlert.remove();
+        });
+
+        dropdown.classList.remove('active');
+    });
+}
         function showSettings() {
             alert('Settings panel coming soon!');
             const dropdown = document.querySelector('.kebab-dropdown');
@@ -1256,44 +1392,32 @@
                 newsItems.appendChild(newsItem);
             });
         }
-   
-     // Handle image click to open zoom view
-document.addEventListener('click', function (e) {
+
+    document.addEventListener('click', function (e) {
     if (e.target.tagName === 'IMG' && e.target.closest('.message')) {
         openZoom(e.target.src);
     }
 });
 
-// Open zoom overlay
 function openZoom(src) {
     document.body.style.overflow = 'hidden';
     const overlay = document.getElementById('zoom-overlay');
     const zoomImage = document.getElementById('zoom-image');
+    const downloadBtn = document.getElementById('download-btn');
 
     zoomImage.src = src;
+
+    // Force download filename
+    downloadBtn.href = src;
+    downloadBtn.setAttribute('download', 'image.jpg');
+
     overlay.style.display = 'flex';
 }
 
-// Close zoom overlay
 function closeZoom() {
     document.body.style.overflow = '';
     document.getElementById('zoom-overlay').style.display = 'none';
 }
-
-// Handle image download
-document.getElementById('download-btn').addEventListener('click', function (e) {
-    e.stopPropagation(); // Prevent background click from closing
-    const image = document.getElementById('zoom-image');
-    const link = document.createElement('a');
-    link.href = image.src;
-
-    // Optional: auto-generate filename
-    link.download = image.src.split('/').pop().split('?')[0] || 'image.jpg';
-
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-});
         document.getElementById('user-input').addEventListener('keypress', function(e) {
             if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault();
@@ -1341,7 +1465,7 @@ document.getElementById('download-btn').addEventListener('click', function (e) {
                 document.querySelector('.news-container').style.display = 'none';
             }
         });
-  
+
 
         function handleScroll() {
             const goTopBtn = document.querySelector('.gotopbtn');
@@ -1426,6 +1550,6 @@ function closeZoom() {
             showContainer('chat');
             document.querySelector('.chat-input').style.display = 'flex';
         }
-  
+
     </script>
 </html>

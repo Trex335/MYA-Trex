@@ -104,7 +104,7 @@ function handleCommand(input) {
 // API handler
 app.post("/api/command", async (req, res) => {
   try {
-    const { message, repliedTo } = req.body;
+    const { message } = req.body;
     if (!message) return res.status(400).json({ reply: "❌ Message is required" });
 
     if (message.trim().toLowerCase() === "prefix") {
@@ -114,12 +114,10 @@ app.post("/api/command", async (req, res) => {
     const cmd = handleCommand(message);
     if (!cmd) return res.end();
 
-    // AI command
     if (cmd.commandName === "ai") {
       try {
-        const prompt = repliedTo ? `Replying to "${repliedTo}": ${cmd.text}` : cmd.text;
         const response = await axios.get(
-          `https://yau-ai-runing-station.vercel.app/ai?prompt=${encodeURIComponent(prompt)}&cb=${Date.now()}`,
+          `https://yau-ai-runing-station.vercel.app/ai?prompt=${encodeURIComponent(cmd.text)}&cb=${Date.now()}`,
           { headers: { Accept: "application/json" }, responseType: "text" }
         );
 
@@ -137,7 +135,6 @@ app.post("/api/command", async (req, res) => {
       }
     }
 
-    // Custom commands
     const command = commands[cmd.commandName];
     if (!command) return res.json({ reply: "❌ Command not found" });
     if (typeof command.onStart !== "function") {
@@ -149,10 +146,7 @@ app.post("/api/command", async (req, res) => {
       api: {
         sendMessage: (msg) => replies.push(typeof msg === "string" ? msg : JSON.stringify(msg))
       },
-      event: {
-        body: cmd.text,
-        repliedTo: repliedTo || null
-      },
+      event: { body: cmd.text },
       args: cmd.args,
       message: {
         reply: (content) => replies.push(content)
