@@ -1,4 +1,3 @@
-<DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8" />
@@ -211,7 +210,7 @@ html, body {
     overflow: hidden;
     z-index: 1;
 }
-#private-ai {
+  #private-ai {
     flex: 1;
     max-width: 600px;
     margin: 50px auto 0;
@@ -238,14 +237,15 @@ html, body {
 
 .chat-messages, #private-ai-container {
     flex: 1;
-    padding: 15px;
+    padding: 10px 15px; /* Changed from 15px to 10px 15px */
     overflow-y: auto;
     margin-bottom: 50px;
+    gap: 2px; /* Added to reduce space between messages */
 }
 .chat-messages {
     flex: 1;
-    height: calc(100% - 60px); /* Adjust based on input height */
-    padding: 15px;
+    height: calc(100% - 60px);
+    padding: 10px 15px; /* Changed from 15px to 10px 15px */
     overflow-y: auto;
     display: flex;
     margin-bottom: 50px;
@@ -258,19 +258,20 @@ html, body {
     -webkit-overflow-scrolling: touch;
     overscroll-behavior: contain;
     touch-action: auto;
+    gap: 2px; /* Added to reduce space between messages */
 }
 
 .message {
-    padding: 10px;
-    border-radius: 20px;
-    margin-bottom: 8px;
-    max-width: 83%;
+    padding: 6px 10px; /* Changed from 10px to 6px 10px */
+    border-radius: 18px; /* Changed from 20px to 18px */
+    margin-bottom: 2px; /* Changed from 8px to 2px */
+    max-width: 85%; /* Changed from 83% to 85% */
     word-wrap: break-word;
     white-space: pre-wrap;
     position: relative;
     display: flex;
     align-items: flex-start;
-    gap: 8px;
+    gap: 6px; /* Changed from 8px to 6px */
     touch-action: none;
     -webkit-user-select: none;
     -ms-user-select: none;
@@ -281,12 +282,12 @@ html, body {
 .content {
     user-select: none;
     flex-grow: 1;
-    padding: 10px;
-    border-radius: 15px;
+    padding: 8px 12px; /* Changed from 10px to 8px 12px */
+    border-radius: 14px; /* Changed from 15px to 14px */
     position: relative;
     overflow: hidden;
     background-color: #f2f3f5;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05); /* Changed from 0 2px 5px */
 }
 
 .message.sent .content {
@@ -294,38 +295,36 @@ html, body {
 }
 
 .reply-preview {
-    font-size: 0.85em;
+    font-size: 0.8em; /* Changed from 0.85em */
     color: #555;
     background-color: #eee;
-    padding: 6px 10px;
+    padding: 4px 8px; /* Changed from 6px 10px */
     border-left: 3px solid #888;
-    margin-bottom: 6px;
-    border-radius: 6px;
+    margin-bottom: 4px; /* Changed from 6px */
+    border-radius: 5px; /* Changed from 6px */
     max-width: 90%;
     white-space: pre-wrap;
 }
 
 /* Avatar base style */
 .message .avatar {
-    width: 28px;
-    height: 28px;
+    width: 26px; /* Changed from 28px */
+    height: 26px; /* Changed from 28px */
     border-radius: 50%;
     flex-shrink: 0;
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
     align-self: flex-start;
-    margin-top: 10px;
+    margin-top: 6px; /* Changed from 10px */
 }
 
 /* Sent messages should also show avatars now */
 .message.sent .avatar {
     display: block;
-    order: 2; /* Move avatar to the end */
-    margin-top: 10px; /* Your specific adjustment for right-side avatars */
+    order: 2;
+    margin-top: 6px; /* Changed from 10px */
 }
-
-
 
 .message .avatar img {
     width: 100%;
@@ -336,24 +335,24 @@ html, body {
 
 /* Username styling */
 .message .username {
-    font-size: 0.72rem;
+    font-size: 0.68rem; /* Changed from 0.72rem */
     font-weight: bold;
     color: #777;
-    margin-bottom: 4px;
+    margin-bottom: 2px; /* Changed from 4px */
     line-height: 1;
 }
 
 /* Received messages (left aligned) */
 .message.received {
     align-self: flex-start;
-    margin-left: -15px;
+    margin-left: -10px; /* Changed from -15px */
     flex-direction: row;
 }
 
 /* Sent messages (right aligned) */
 .message.sent {
     align-self: flex-end;
-    margin-right: -15px;
+    margin-right: -10px; /* Changed from -15px */
     flex-direction: row;
     justify-content: flex-end;
 }
@@ -363,62 +362,60 @@ html, body {
     order: 1;
 }
 
-
 .message img {
     width: 100%;
-    margin: 6px 0 0 0;
+    margin: 4px 0 0 0; /* Changed from 6px 0 0 0 */
     display: block;
-    border-radius: 12px;
+    border-radius: 10px; /* Changed from 12px */
     object-fit: cover;
-    box-shadow: 0 3px 12px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); /* Changed from 0 3px 12px */
     transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 .message img:hover {
     transform: scale(1.02);
-    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); /* Changed from 0 6px 18px */
 }
 
+.message.sent .content {
+    background-color: #DCF8C6;
+}
 
-        .message.sent .content {
-            background-color: #DCF8C6;
-        }
+.message.received .content {
+    background-color: #f0f0f0;
+}
 
-        .message.received .content {
-            background-color: #f0f0f0;
-        }
+.message-context-menu {
+    position: absolute;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    padding: 8px 0;
+    z-index: 1000;
+    display: none;
+}
 
+.message-context-menu.active {
+    display: block;
+}
 
-        .message-context-menu {
-            position: absolute;
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            padding: 8px 0;
-            z-index: 1000;
-            display: none;
-        }
+.message-context-menu button {
+    display: block;
+    width: 100%;
+    padding: 8px 16px;
+    border: none;
+    background: none;
+    text-align: left;
+    cursor: pointer;
+    font-size: 14px;
+    color: #333;
+}
 
-        .message-context-menu.active {
-            display: block;
-        }
+.message-context-menu button:hover {
+    background-color: #f5f5f5;
+}
 
-        .message-context-menu button {
-            display: block;
-            width: 100%;
-            padding: 8px 16px;
-            border: none;
-            background: none;
-            text-align: left;
-            cursor: pointer;
-            font-size: 14px;
-            color: #333;
-        }
-
-        .message-context-menu button:hover {
-            background-color: #f5f5f5;
-        }
-       /* Hide avatar and username for sent messages */
+/* Hide avatar and username for sent messages */
 .message.sent .avatar {
     display: none !important;
 }
