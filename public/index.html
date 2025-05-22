@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8" />
@@ -188,7 +188,7 @@
         .active {
             display: block;
         }
-
+        
 html, body {
     /* Remove these restrictive properties */
     /* overscroll-behavior: none; */
@@ -211,7 +211,7 @@ html, body {
     overflow: hidden;
     z-index: 1;
 }
-         #private-ai {
+#private-ai {
     flex: 1;
     max-width: 600px;
     margin: 50px auto 0;
@@ -238,22 +238,14 @@ html, body {
 
 .chat-messages, #private-ai-container {
     flex: 1;
-    padding: 10px 15px; /* Changed from 15px to 10px 15px */
+    padding: 15px;
     overflow-y: auto;
-    margin-bottom: 60px;
-    gap: 2px; /* Added to reduce space between messages */
-}
-
-/* Add this new style to ensure messages don't hide behind input */
-.message-spacer {
-    height: 70px;
-    width: 100%;
-    flex-shrink: 0;
+    margin-bottom: 50px;
 }
 .chat-messages {
     flex: 1;
-    height: calc(100% - 60px);
-    padding: 10px 15px; /* Changed from 15px to 10px 15px */
+    height: calc(100% - 60px); /* Adjust based on input height */
+    padding: 15px;
     overflow-y: auto;
     display: flex;
     margin-bottom: 50px;
@@ -266,36 +258,35 @@ html, body {
     -webkit-overflow-scrolling: touch;
     overscroll-behavior: contain;
     touch-action: auto;
-    gap: 2px; /* Added to reduce space between messages */
 }
 
 .message {
-    padding: 6px 10px; /* Changed from 10px to 6px 10px */
-    border-radius: 18px; /* Changed from 20px to 18px */
-    margin-bottom: 2px; /* Changed from 8px to 2px */
-    max-width: 85%; /* Changed from 83% to 85% */
+    padding: 10px;
+    border-radius: 20px;
+    margin-bottom: 8px;
+    max-width: 83%;
     word-wrap: break-word;
     white-space: pre-wrap;
     position: relative;
     display: flex;
     align-items: flex-start;
-    gap: 6px; /* Changed from 8px to 6px */
+    gap: 8px;
     touch-action: none;
     -webkit-user-select: none;
     -ms-user-select: none;
     user-select: none;
     touch-action: manipulation;
 }
-
+     
 .content {
     user-select: none;
     flex-grow: 1;
-    padding: 8px 12px; /* Changed from 10px to 8px 12px */
-    border-radius: 14px; /* Changed from 15px to 14px */
+    padding: 10px;
+    border-radius: 15px;
     position: relative;
     overflow: hidden;
     background-color: #f2f3f5;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05); /* Changed from 0 2px 5px */
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
 }
 
 .message.sent .content {
@@ -303,36 +294,38 @@ html, body {
 }
 
 .reply-preview {
-    font-size: 0.8em; /* Changed from 0.85em */
+    font-size: 0.85em;
     color: #555;
     background-color: #eee;
-    padding: 4px 8px; /* Changed from 6px 10px */
+    padding: 6px 10px;
     border-left: 3px solid #888;
-    margin-bottom: 4px; /* Changed from 6px */
-    border-radius: 5px; /* Changed from 6px */
+    margin-bottom: 6px;
+    border-radius: 6px;
     max-width: 90%;
     white-space: pre-wrap;
 }
 
 /* Avatar base style */
 .message .avatar {
-    width: 26px; /* Changed from 28px */
-    height: 26px; /* Changed from 28px */
+    width: 28px;
+    height: 28px;
     border-radius: 50%;
     flex-shrink: 0;
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
     align-self: flex-start;
-    margin-top: 6px; /* Changed from 10px */
+    margin-top: 10px;
 }
 
 /* Sent messages should also show avatars now */
 .message.sent .avatar {
     display: block;
-    order: 2;
-    margin-top: 6px; /* Changed from 10px */
+    order: 2; /* Move avatar to the end */
+    margin-top: 10px; /* Your specific adjustment for right-side avatars */
 }
+
+
 
 .message .avatar img {
     width: 100%;
@@ -343,24 +336,24 @@ html, body {
 
 /* Username styling */
 .message .username {
-    font-size: 0.68rem; /* Changed from 0.72rem */
+    font-size: 0.72rem;
     font-weight: bold;
     color: #777;
-    margin-bottom: 2px; /* Changed from 4px */
+    margin-bottom: 4px;
     line-height: 1;
 }
 
 /* Received messages (left aligned) */
 .message.received {
     align-self: flex-start;
-    margin-left: -10px; /* Changed from -15px */
+    margin-left: -15px;
     flex-direction: row;
 }
 
 /* Sent messages (right aligned) */
 .message.sent {
     align-self: flex-end;
-    margin-right: -10px; /* Changed from -15px */
+    margin-right: -15px;
     flex-direction: row;
     justify-content: flex-end;
 }
@@ -370,60 +363,62 @@ html, body {
     order: 1;
 }
 
+
 .message img {
     width: 100%;
-    margin: 4px 0 0 0; /* Changed from 6px 0 0 0 */
+    margin: 6px 0 0 0;
     display: block;
-    border-radius: 10px; /* Changed from 12px */
+    border-radius: 12px;
     object-fit: cover;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); /* Changed from 0 3px 12px */
+    box-shadow: 0 3px 12px rgba(0, 0, 0, 0.1);
     transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 .message img:hover {
     transform: scale(1.02);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); /* Changed from 0 6px 18px */
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.15);
 }
 
-.message.sent .content {
-    background-color: #DCF8C6;
-}
 
-.message.received .content {
-    background-color: #f0f0f0;
-}
+        .message.sent .content {
+            background-color: #DCF8C6;
+        }
 
-.message-context-menu {
-    position: absolute;
-    background: white;
-    border-radius: 8px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-    padding: 8px 0;
-    z-index: 1000;
-    display: none;
-}
+        .message.received .content {
+            background-color: #f0f0f0;
+        }
 
-.message-context-menu.active {
-    display: block;
-}
 
-.message-context-menu button {
-    display: block;
-    width: 100%;
-    padding: 8px 16px;
-    border: none;
-    background: none;
-    text-align: left;
-    cursor: pointer;
-    font-size: 14px;
-    color: #333;
-}
+        .message-context-menu {
+            position: absolute;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 8px 0;
+            z-index: 1000;
+            display: none;
+        }
 
-.message-context-menu button:hover {
-    background-color: #f5f5f5;
-}
+        .message-context-menu.active {
+            display: block;
+        }
 
-/* Hide avatar and username for sent messages */
+        .message-context-menu button {
+            display: block;
+            width: 100%;
+            padding: 8px 16px;
+            border: none;
+            background: none;
+            text-align: left;
+            cursor: pointer;
+            font-size: 14px;
+            color: #333;
+        }
+
+        .message-context-menu button:hover {
+            background-color: #f5f5f5;
+        }
+       /* Hide avatar and username for sent messages */
 .message.sent .avatar {
     display: none !important;
 }
@@ -805,18 +800,6 @@ html, body {
     background-color: #555;
     margin: 5px 0;
 }
-    .chat-input button i.fa-image {
-    color: #4267B2;
-    font-size: 22px;
-}
-
-.chat-input button:hover i.fa-image {
-    color: #365899;
-}
-
-#private-image-upload {
-    display: none;
-}
   </style>
 </head>
 <body>
@@ -876,7 +859,7 @@ html, body {
 <button class="news-toggle" onclick="toggleNews()" title="Toggle News" style="display: none;">
     <i class="fas fa-newspaper"></i>
 </button>
-
+  
   <div id="chat" class="chat-container container" style="display: none;">
     <div class="chat-messages" id="chat-container"></div>
     <div id="reply-preview-container"></div>
@@ -888,21 +871,16 @@ html, body {
     </div>
 </div>
 
-  <div id="private-ai" class="chat-container container" style="display: none;">
+<div id="private-ai" class="chat-container container" style="display: none;">
     <div class="chat-messages" id="private-ai-container"></div>
     <div id="private-reply-preview-container"></div>
     <div class="chat-input" style="display: none;">
-        <button onclick="document.getElementById('private-image-upload').click()" title="Upload Image">
-            <i class="fas fa-image"></i>
-        </button>
-        <input type="file" id="private-image-upload" accept="image/*" style="display: none;" onchange="handlePrivateImageUpload(event)">
         <textarea id="private-user-input" placeholder="Type your private message..."></textarea>
         <button onclick="sendPrivateMessage()" disabled>
             <i class="fas fa-paper-plane"></i>
         </button>
     </div>
 </div>
-
   <div id="zoom-overlay" style="
     display: none;
     justify-content: center;
@@ -1074,36 +1052,19 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelector('.menu').style.display = 'flex';
     document.querySelector('.news-toggle').style.display = 'block';
     showContainer('chat');
-    initializeChat(); // This will only set up interval if logged in
   } else {
     document.getElementById('auth-container').style.display = 'flex';
     document.querySelector('.menu').style.display = 'none';
     document.querySelector('.news-toggle').style.display = 'none';
-    // Don't call initializeChat() here to prevent pre-login message loading
   }
-
+  
   if ('Notification' in window) {
     Notification.requestPermission().then(permission => {
       notificationPermissionGranted = permission === 'granted';
     });
   }
-
-  // Initialize other components
-  updateGoTopBtn();
-  handleScroll();
-  populateNews();
-
-  // Set up scroll-to-top button
-  document.querySelector('.gotopbtn').addEventListener('click', function(e) {
-    e.preventDefault();
-    document.getElementById('chat-container').scrollTo({
-      top: 0,
-      behavior: 'smooth'
-    });
-  });
-
-  // Set up chat container scroll handler
-  document.getElementById('chat-container').addEventListener('scroll', handleScroll);
+  
+  initializeChat();
 });
 
 function toggleAuth() {
@@ -1169,7 +1130,7 @@ async function handleAuth() {
   }
 
   loader.style.display = 'flex';
-
+  
   try {
     // Simulate network delay
     await new Promise(resolve => setTimeout(resolve, 500));
@@ -1216,7 +1177,7 @@ setTimeout(() => {
 function showContainer(containerId) {
   document.querySelectorAll('.container').forEach(c => c.style.display = 'none');
   document.querySelectorAll('.chat-input').forEach(i => i.style.display = 'none');
-
+  
   const container = document.getElementById(containerId);
   if (container) {
     container.style.display = 'block';
@@ -1320,12 +1281,10 @@ function initializeChat() {
     }
   });
 
-  // Only load messages and set interval if user is logged in
-  if (localStorage.getItem('currentUser')) {
-    loadMessages();
-    setInterval(loadMessages, 3000);
-  }
+  loadMessages();
+  setInterval(loadMessages, 3000);
 }
+
 function autoResize(textarea) {
   textarea.style.height = 'auto';
   textarea.style.height = (textarea.scrollHeight > 100 ? 100 : textarea.scrollHeight) + 'px';
@@ -1333,16 +1292,10 @@ function autoResize(textarea) {
 
 async function loadMessages() {
   try {
-    const currentUser = localStorage.getItem('currentUser');
-    if (!currentUser) {
-      // Don't try to load messages if no user is logged in
-      return;
-    }
-
     const response = await fetch('/messages');
     if (!response.ok) throw new Error('Failed to load messages');
     const data = await response.json();
-
+    
     // Check for new messages to show notification
     if (data.length > 0) {
       const latestMessage = data[0];
@@ -1353,24 +1306,21 @@ async function loadMessages() {
       }
       lastMessageId = latestMessage.id;
     }
-
+    
     renderMessages(data);
   } catch (error) {
-    // Only show error if user is logged in
-    if (localStorage.getItem('currentUser')) {
-      showError(error.message);
-    }
+    showError(error.message);
   }
 }
 
 function showNotification(username, message) {
   if (!notificationPermissionGranted || !('Notification' in window)) return;
-
+  
   const notification = new Notification(`${username} says:`, {
     body: message.length > 50 ? message.substring(0, 50) + '...' : message,
     icon: 'https://i.pravatar.cc/50?u=' + encodeURIComponent(username)
   });
-
+  
   notification.onclick = () => {
     window.focus();
   };
@@ -1396,7 +1346,7 @@ function displayPrivateMessage(text, sender, repliedTo = null, username = 'Priva
   const container = document.getElementById('private-ai-container');
   const messageDiv = document.createElement('div');
   messageDiv.className = `message ${sender}`;
-
+  
   const avatarDiv = document.createElement('div');
   avatarDiv.className = 'avatar';
   avatarDiv.innerHTML = `<img src="https://i.pravatar.cc/50?u=${encodeURIComponent(username)}" alt="avatar">`;
@@ -1426,7 +1376,7 @@ function displayPrivateMessage(text, sender, repliedTo = null, username = 'Priva
   container.appendChild(messageDiv);
   container.scrollTop = container.scrollHeight;
 } 
-
+    
 function displayMessage(text, sender, repliedTo = null, username = '', messageId = null) {
   const messageDiv = document.createElement('div');
   messageDiv.className = `message ${sender}`;
@@ -1583,7 +1533,7 @@ async function sendMessage() {
 async function sendPrivateMessage() {
   const input = document.getElementById('private-user-input');
   const content = input.value.trim();
-
+  
   if (!content) return;
 
   // Display user message
@@ -1614,43 +1564,7 @@ async function fetchChatResponse(userInput) {
     console.error("Error fetching AI response:", error);
   }
 }
-
-function handlePrivateImageUpload(event) {
-    const file = event.target.files[0];
-    if (!file) return;
-
-    // Check if the file is an image
-    if (!file.type.match('image.*')) {
-        showError('Please upload an image file');
-        return;
-    }
-
-    // Check file size (e.g., limit to 5MB)
-    if (file.size > 5 * 1024 * 1024) {
-        showError('Image size should be less than 5MB');
-        return;
-    }
-
-    const reader = new FileReader();
-    reader.onload = function(e) {
-        // Display the image in the chat
-        displayPrivateMessage('', 'sent', null, currentUsername);
-
-        // Get the last sent message (which will be empty)
-        const messages = document.getElementById('private-ai-container').children;
-        const lastMessage = messages[messages.length - 1];
-
-        // Create and append the image
-        const img = document.createElement('img');
-        img.src = e.target.result;
-        lastMessage.querySelector('.content').appendChild(img);
-
-        // Send the image data to your private AI
-        sendPrivateImageToAI(e.target.result);
-    };
-    reader.readAsDataURL(file);
-}    
-
+    
 async function fetchPrivateAIResponse(userInput) {
   try {
     const response = await fetch('/api/command', {
@@ -1673,7 +1587,7 @@ async function fetchPrivateAIResponse(userInput) {
     displayPrivateMessage("Error connecting to Private AI", 'received');
   }
 }
-
+    
 function handleTouchStart(e) {
   isLongPress = false;
   e.currentTarget.classList.add('no-select');
@@ -1792,29 +1706,29 @@ function showContainer(containerId) {
     document.querySelectorAll('.container').forEach(container => {
         container.style.display = 'none';
     });
-
+    
     // Hide all chat inputs
     document.querySelectorAll('.chat-input').forEach(input => {
         input.style.display = 'none';
     });
-
+    
     // Show the selected container
     const container = document.getElementById(containerId);
     if (container) {
         container.style.display = 'block';
-
+        
         // Show its input if it's a chat container
         if (containerId === 'chat' || containerId === 'private-ai') {
             container.querySelector('.chat-input').style.display = 'flex';
         }
     }
-
+    
     // Hide the dropdown menu
     document.getElementById('dropdown').style.display = 'none';
-
+    
     // Hide auth container if showing
     document.getElementById('auth-container').style.display = 'none';
-
+    
     // Show menu if logged in
     if (localStorage.getItem('currentUser')) {
         document.querySelector('.menu').style.display = 'flex';
@@ -2157,13 +2071,13 @@ function updateGoTopBtn() {
 function updateProfileSection() {
     const dropdown = document.getElementById('dropdown');
     const currentUsername = localStorage.getItem('currentUser');
-
+    
     // Remove existing profile section if it exists
     const existingProfile = document.querySelector('.profile-section');
     const existingDivider = document.querySelector('.menu-divider');
     if (existingProfile) existingProfile.remove();
     if (existingDivider) existingDivider.remove();
-
+    
     // Only add profile section if user is logged in
     if (currentUsername) {
         const profileSection = document.createElement('div');
@@ -2174,10 +2088,10 @@ function updateProfileSection() {
             </div>
             <div class="profile-username">${currentUsername}</div>
         `;
-
+        
         const divider = document.createElement('div');
         divider.className = 'menu-divider';
-
+        
         // Insert at the beginning of dropdown
         dropdown.insertBefore(divider, dropdown.firstChild);
         dropdown.insertBefore(profileSection, dropdown.firstChild);
@@ -2189,7 +2103,7 @@ document.addEventListener('click', function(event) {
     const dropdown = document.getElementById('dropdown');
     const hamburger = document.querySelector('.hamburger');
     const kebabMenu = document.querySelector('.kebab-menu');
-
+    
     // Close dropdown if clicking outside of it and not on menu controls
     if (dropdown.style.display === 'block' && 
         !dropdown.contains(event.target) && 
@@ -2197,7 +2111,7 @@ document.addEventListener('click', function(event) {
         !kebabMenu.contains(event.target)) {
         dropdown.style.display = 'none';
     }
-
+    
     // Close kebab menu if clicking outside
     const kebabDropdown = document.querySelector('.kebab-dropdown');
     if (kebabDropdown.classList.contains('active') && 
@@ -2211,7 +2125,7 @@ function logout() {
     // Clear user data
     localStorage.removeItem('currentUser');
     localStorage.removeItem('chat_username');
-
+    
     // Hide all containers and menus
     document.querySelectorAll('.container').forEach(container => {
         container.style.display = 'none';
@@ -2219,32 +2133,32 @@ function logout() {
     document.querySelector('.menu').style.display = 'none';
     document.getElementById('dropdown').style.display = 'none';
     document.querySelector('.kebab-dropdown').classList.remove('active');
-
+    
     // Hide all chat inputs
     document.querySelectorAll('.chat-input').forEach(input => {
         input.style.display = 'none';
     });
-
+    
     // Show auth container
     document.getElementById('auth-container').style.display = 'flex';
-
+    
     // Hide news toggle
     document.querySelector('.news-toggle').style.display = 'none';
     document.querySelector('.news-container').style.display = 'none';
-
+    
     // Reset auth form
     isLogin = true;
     document.getElementById('auth-title').textContent = 'Login';
     document.querySelector('.auth-box button').textContent = 'Login';
     document.getElementById('toggle-text').textContent = "Don't have an account? ";
     document.getElementById('toggle-link').textContent = 'Sign Up';
-
+    
     // Clear profile section
     const profileSection = document.querySelector('.profile-section');
     const divider = document.querySelector('.menu-divider');
     if (profileSection) profileSection.remove();
     if (divider) divider.remove();
-
+    
     updateGoTopBtn();
 }
 
@@ -2252,13 +2166,13 @@ function logout() {
 function toggleDropdown() {
     const dropdown = document.getElementById('dropdown');
     const isVisible = dropdown.style.display === 'block';
-
+    
     // Close all other menus first
     document.querySelector('.kebab-dropdown').classList.remove('active');
-
+    
     // Toggle dropdown
     dropdown.style.display = isVisible ? 'none' : 'block';
-
+    
     // Close if clicking the same button while open
     if (isVisible) {
         dropdown.style.display = 'none';
@@ -2271,27 +2185,27 @@ function showContainer(containerId) {
     containers.forEach(container => {
         container.style.display = 'none';
     });
-
+    
     // Hide all chat inputs first
     document.querySelectorAll('.chat-input').forEach(input => {
         input.style.display = 'none';
     });
-
+    
     // Show the selected container
     const container = document.getElementById(containerId);
     if (container) {
         container.style.display = 'block';
-
+        
         // Show the appropriate chat input
         if (containerId === 'chat' || containerId === 'private-ai') {
             container.querySelector('.chat-input').style.display = 'flex';
         }
     }
-
+    
     // Close all menus when showing any container
     document.getElementById('dropdown').style.display = 'none';
     document.querySelector('.kebab-dropdown').classList.remove('active');
-
+    
     currentUsername = localStorage.getItem('chat_username') || '';
 }
 
@@ -2299,11 +2213,11 @@ function showContainer(containerId) {
 function hideContainer(containerId) {
     document.getElementById(containerId).style.display = 'none';
     document.getElementById('overlay').style.display = 'none';
-
+    
     // Close all menus when hiding any container
     document.getElementById('dropdown').style.display = 'none';
     document.querySelector('.kebab-dropdown').classList.remove('active');
-
+    
     // Show chat container and input after closing any section
     showContainer('chat');
 }
@@ -2337,59 +2251,5 @@ if (currentUser) {
     document.querySelector('.chat-input').style.display = 'flex';
     updateProfileSection();
 }
-        // Improved URL detection pattern that handles more cases
-const URL_PATTERN = /https?:\/\/[^\s<>]+(?:\b|$)/g;
-
-// Updated highlight function that processes all URLs
-function highlightLinksInElement(element) {
-    if (!element || element.querySelector('img, audio, video, a')) return;
-    
-    const text = element.textContent;
-    if (!text) return;
-    
-    // Replace all URLs with anchor tags
-    const html = text.replace(URL_PATTERN, url => {
-        // Clean URL by removing trailing punctuation
-        const cleanUrl = url.replace(/[.,;!?]+$/, '');
-        return `<a href="${cleanUrl}" target="_blank" style="color: #0066cc; text-decoration: underline;">${cleanUrl}</a>`;
-    });
-    
-    // Only update if we found URLs
-    if (html !== text) {
-        element.innerHTML = html;
-    }
-}
-
-// Update the displayMessage function to ensure it processes all text nodes
-const originalDisplayMessage = displayMessage;
-displayMessage = function(text, sender, repliedTo = null) {
-    const messageElement = originalDisplayMessage.call(this, text, sender, repliedTo);
-    const contentDiv = messageElement.querySelector('.content');
-    
-    // Process all text nodes in the content div
-    const textNodes = [];
-    const walker = document.createTreeWalker(
-        contentDiv,
-        NodeFilter.SHOW_TEXT,
-        null,
-        false
-    );
-    
-    let node;
-    while (node = walker.nextNode()) {
-        textNodes.push(node);
-    }
-    
-    textNodes.forEach(node => {
-        if (URL_PATTERN.test(node.nodeValue)) {
-            const span = document.createElement('span');
-            span.textContent = node.nodeValue;
-            highlightLinksInElement(span);
-            node.parentNode.replaceChild(span, node);
-        }
-    });
-    
-    return messageElement;
-};
   </script>
 </html>
