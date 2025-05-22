@@ -2337,5 +2337,59 @@ if (currentUser) {
     document.querySelector('.chat-input').style.display = 'flex';
     updateProfileSection();
 }
+        // Improved URL detection pattern that handles more cases
+const URL_PATTERN = /https?:\/\/[^\s<>]+(?:\b|$)/g;
+
+// Updated highlight function that processes all URLs
+function highlightLinksInElement(element) {
+    if (!element || element.querySelector('img, audio, video, a')) return;
+    
+    const text = element.textContent;
+    if (!text) return;
+    
+    // Replace all URLs with anchor tags
+    const html = text.replace(URL_PATTERN, url => {
+        // Clean URL by removing trailing punctuation
+        const cleanUrl = url.replace(/[.,;!?]+$/, '');
+        return `<a href="${cleanUrl}" target="_blank" style="color: #0066cc; text-decoration: underline;">${cleanUrl}</a>`;
+    });
+    
+    // Only update if we found URLs
+    if (html !== text) {
+        element.innerHTML = html;
+    }
+}
+
+// Update the displayMessage function to ensure it processes all text nodes
+const originalDisplayMessage = displayMessage;
+displayMessage = function(text, sender, repliedTo = null) {
+    const messageElement = originalDisplayMessage.call(this, text, sender, repliedTo);
+    const contentDiv = messageElement.querySelector('.content');
+    
+    // Process all text nodes in the content div
+    const textNodes = [];
+    const walker = document.createTreeWalker(
+        contentDiv,
+        NodeFilter.SHOW_TEXT,
+        null,
+        false
+    );
+    
+    let node;
+    while (node = walker.nextNode()) {
+        textNodes.push(node);
+    }
+    
+    textNodes.forEach(node => {
+        if (URL_PATTERN.test(node.nodeValue)) {
+            const span = document.createElement('span');
+            span.textContent = node.nodeValue;
+            highlightLinksInElement(span);
+            node.parentNode.replaceChild(span, node);
+        }
+    });
+    
+    return messageElement;
+};
   </script>
 </html>
