@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8" />
@@ -235,12 +236,14 @@ html, body {
     overflow: hidden;
 }
 
-.chat-messages, #private-ai-container {
+.chat-messages,
+#private-ai-container {
     flex: 1;
-    padding: 10px 15px; /* Changed from 15px to 10px 15px */
+    padding: 10px 15px 50px 15px;  /* Top:10, Right:15, Bottom:50, Left:15 */
     overflow-y: auto;
-    margin-bottom: 50px;
-    gap: 2px; /* Added to reduce space between messages */
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
 }
 .chat-messages {
     flex: 1;
@@ -264,7 +267,7 @@ html, body {
 .message {
     padding: 6px 10px; /* Changed from 10px to 6px 10px */
     border-radius: 18px; /* Changed from 20px to 18px */
-    margin-bottom: 2px; /* Changed from 8px to 2px */
+    margin-bottom: 0.45em; /* Changed from 8px to 2px */
     max-width: 85%; /* Changed from 83% to 85% */
     word-wrap: break-word;
     white-space: pre-wrap;
@@ -345,6 +348,7 @@ html, body {
 /* Received messages (left aligned) */
 .message.received {
     align-self: flex-start;
+    margin-bottom: 0.59em;
     margin-left: -10px; /* Changed from -15px */
     flex-direction: row;
 }
@@ -522,7 +526,6 @@ html, body {
 
 .auth-box input {
     width: 90%;
-
     height: 57px;
     padding: 0 20px;
     margin-bottom: 20px;
@@ -852,7 +855,12 @@ html, body {
     <a href="#" onclick="showContainer('help')">Help</a>
     <a href="#" onclick="logout()" style="color: #ff4444;">Logout</a>
 </div>
-
+    
+ <div class="news-container" id="news-container" style="display: none;">
+    <div class="news-header">Latest News</div>
+    <div class="news-items" id="news-items"></div>
+   </div>
+</div>
 <button class="news-toggle" onclick="toggleNews()" title="Toggle News" style="display: none;">
     <i class="fas fa-newspaper"></i>
 </button>
@@ -1920,9 +1928,14 @@ function showContainer(containerId) {
         }
 
         function toggleNews() {
-            const newsContainer = document.getElementById('news-container');
-            newsContainer.style.display = newsContainer.style.display === 'none' ? 'block' : 'none';
-        }
+    const newsContainer = document.getElementById('news-container');
+    if (newsContainer.style.display === 'none' || !newsContainer.style.display) {
+        newsContainer.style.display = 'block';
+        populateNews(); // Make sure news items are populated
+    } else {
+        newsContainer.style.display = 'none';
+    }
+}
 
         const sampleNews = [
             {
@@ -1942,21 +1955,23 @@ function showContainer(containerId) {
             }
         ];
 
-        function populateNews() {
-            const newsItems = document.getElementById('news-items');
-            newsItems.innerHTML = '';
+     function populateNews() {
+    const newsItems = document.getElementById('news-items');
+    if (!newsItems) return;
+    
+    newsItems.innerHTML = '';
 
-            sampleNews.forEach(news => {
-                const newsItem = document.createElement('div');
-                newsItem.className = 'news-item';
-                newsItem.innerHTML = `
-                    <h3>${news.title}</h3>
-                    <p>${news.description}</p>
-                    <small>${news.date}</small>
-                `;
-                newsItems.appendChild(newsItem);
-            });
-        }
+    sampleNews.forEach(news => {
+        const newsItem = document.createElement('div');
+        newsItem.className = 'news-item';
+        newsItem.innerHTML = `
+            <h3>${news.title}</h3>
+            <p>${news.description}</p>
+            <small>${news.date}</small>
+        `;
+        newsItems.appendChild(newsItem);
+    });
+}
 
     document.addEventListener('click', function (e) {
     if (e.target.tagName === 'IMG' && e.target.closest('.message')) {
@@ -2035,14 +2050,16 @@ document.addEventListener('DOMContentLoaded', function () {
 
     document.getElementById('chat-container').addEventListener('scroll', handleScroll);
 
-    const currentUser = localStorage.getItem('currentUser');
-    if (currentUser) {
-        document.querySelector('.news-toggle').style.display = 'block';
+    // In your DOMContentLoaded event:
+function toggleNews() {
+    const newsContainer = document.getElementById('news-container');
+    if (newsContainer.style.display === 'none' || !newsContainer.style.display) {
+        newsContainer.style.display = 'block';
+        populateNews(); // Make sure news items are populated
     } else {
-        document.querySelector('.news-toggle').style.display = 'none';
-        document.querySelector('.news-container').style.display = 'none';
+        newsContainer.style.display = 'none';
     }
-});
+}
 
 function handleScroll() {
     const goTopBtn = document.querySelector('.gotopbtn');
@@ -2118,6 +2135,7 @@ document.addEventListener('click', function(event) {
     }
 });
 
+    
 function logout() {
     // Clear user data
     localStorage.removeItem('currentUser');
