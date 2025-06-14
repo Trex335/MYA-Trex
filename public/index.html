@@ -855,12 +855,7 @@ html, body {
     <a href="#" onclick="showContainer('help')">Help</a>
     <a href="#" onclick="logout()" style="color: #ff4444;">Logout</a>
 </div>
-    
- <div class="news-container" id="news-container" style="display: none;">
-    <div class="news-header">Latest News</div>
-    <div class="news-items" id="news-items"></div>
-   </div>
-</div>
+
 <button class="news-toggle" onclick="toggleNews()" title="Toggle News" style="display: none;">
     <i class="fas fa-newspaper"></i>
 </button>
@@ -1928,14 +1923,9 @@ function showContainer(containerId) {
         }
 
         function toggleNews() {
-    const newsContainer = document.getElementById('news-container');
-    if (newsContainer.style.display === 'none' || !newsContainer.style.display) {
-        newsContainer.style.display = 'block';
-        populateNews(); // Make sure news items are populated
-    } else {
-        newsContainer.style.display = 'none';
-    }
-}
+            const newsContainer = document.getElementById('news-container');
+            newsContainer.style.display = newsContainer.style.display === 'none' ? 'block' : 'none';
+        }
 
         const sampleNews = [
             {
@@ -1955,23 +1945,21 @@ function showContainer(containerId) {
             }
         ];
 
-     function populateNews() {
-    const newsItems = document.getElementById('news-items');
-    if (!newsItems) return;
-    
-    newsItems.innerHTML = '';
+        function populateNews() {
+            const newsItems = document.getElementById('news-items');
+            newsItems.innerHTML = '';
 
-    sampleNews.forEach(news => {
-        const newsItem = document.createElement('div');
-        newsItem.className = 'news-item';
-        newsItem.innerHTML = `
-            <h3>${news.title}</h3>
-            <p>${news.description}</p>
-            <small>${news.date}</small>
-        `;
-        newsItems.appendChild(newsItem);
-    });
-}
+            sampleNews.forEach(news => {
+                const newsItem = document.createElement('div');
+                newsItem.className = 'news-item';
+                newsItem.innerHTML = `
+                    <h3>${news.title}</h3>
+                    <p>${news.description}</p>
+                    <small>${news.date}</small>
+                `;
+                newsItems.appendChild(newsItem);
+            });
+        }
 
     document.addEventListener('click', function (e) {
     if (e.target.tagName === 'IMG' && e.target.closest('.message')) {
@@ -2050,16 +2038,14 @@ document.addEventListener('DOMContentLoaded', function () {
 
     document.getElementById('chat-container').addEventListener('scroll', handleScroll);
 
-    // In your DOMContentLoaded event:
-function toggleNews() {
-    const newsContainer = document.getElementById('news-container');
-    if (newsContainer.style.display === 'none' || !newsContainer.style.display) {
-        newsContainer.style.display = 'block';
-        populateNews(); // Make sure news items are populated
+    const currentUser = localStorage.getItem('currentUser');
+    if (currentUser) {
+        document.querySelector('.news-toggle').style.display = 'block';
     } else {
-        newsContainer.style.display = 'none';
+        document.querySelector('.news-toggle').style.display = 'none';
+        document.querySelector('.news-container').style.display = 'none';
     }
-}
+});
 
 function handleScroll() {
     const goTopBtn = document.querySelector('.gotopbtn');
@@ -2135,7 +2121,6 @@ document.addEventListener('click', function(event) {
     }
 });
 
-    
 function logout() {
     // Clear user data
     localStorage.removeItem('currentUser');
