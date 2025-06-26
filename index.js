@@ -23,8 +23,8 @@ global.utils = {
 
 // Initialize Supabase
 const supabase = createClient(
-  'https://ugalfvlbxwvrcsewtmjh.supabase.co',
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVnYWxmdmxieHd2cmNzZXd0bWpoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDYyODU0MDUsImV4cCI6MjA2MTg2MTQwNX0.aZ8OyCmPMvfYFjMiVBikKCCxzb-9Mp1p-ZOi18swKN0'
+  'https://sratulilszjazwcevxta.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNyYXR1bGlsc3pqYXp3Y2V2eHRhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA5NjIwMDAsImV4cCI6MjA2NjUzODAwMH0.xsNMr1PYeCXMcuEgkkSZnWib63mFATblTF3wR5Zpci4'
 );
 
 // Configure multer for file uploads
@@ -150,7 +150,7 @@ function handleCommand(input) {
 app.get('/messages', async (req, res) => {
   try {
     const { data, error } = await supabase
-      .from('chatter')
+      .from('chatterr')
       .select('id, content, username, created_at, image_url')
       .order('created_at', { ascending: false });
 
@@ -171,7 +171,7 @@ app.post('/messages', async (req, res) => {
     }
 
     const { data, error } = await supabase
-      .from('chatter')
+      .from('chatterr')
       .insert([{ content, username, image_url }])
       .select();
 
@@ -223,7 +223,7 @@ app.delete('/messages/:id', async (req, res) => {
   try {
     const { id } = req.params;
     const { error } = await supabase
-      .from('chatter')
+      .from('chatterr')
       .delete()
       .eq('id', id);
 
